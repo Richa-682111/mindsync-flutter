@@ -12,15 +12,17 @@ class MoodStressedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.canvas,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('De-stress'),
-        backgroundColor: AppTheme.canvas,
+        title: const Text('Feeling Stressed'),
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.mainGradient),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -114,6 +116,9 @@ class MoodStressedScreen extends StatelessWidget {
             // ── Release Now ──
             _ReleaseNowButton(),
           ],
+        ),
+        ),
+      ),
         ),
       ),
     );

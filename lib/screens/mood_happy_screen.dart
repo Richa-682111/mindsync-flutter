@@ -10,15 +10,17 @@ class MoodHappyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.canvas,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Feeling Happy'),
-        backgroundColor: AppTheme.canvas,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.mainGradient),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -77,6 +79,8 @@ class MoodHappyScreen extends StatelessWidget {
             const _GoalTile(title: 'Meditate for 5 mins'),
             const _GoalTile(title: 'Get 10 minutes of sunlight'),
           ],
+        ),
+      ),
         ),
       ),
     );

@@ -28,9 +28,8 @@ class MoodSelectionScreen extends StatelessWidget {
     final name = email.contains('@') ? email.split('@').first : 'there';
 
     return Scaffold(
-      backgroundColor: AppTheme.canvas,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: AppTheme.canvas,
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
@@ -50,7 +49,9 @@ class MoodSelectionScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.mainGradient),
+        child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
