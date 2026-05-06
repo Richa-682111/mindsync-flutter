@@ -85,7 +85,6 @@ class CBTData {
 
   static String getRandomResponse(String distortionId) {
     final responses = supportiveResponses[distortionId] ?? supportiveResponses['default']!;
-    responses.shuffle();
-    return responses.first;
+    return responses[DateTime.now().microsecondsSinceEpoch % responses.length];
   }
 }
