@@ -29,13 +29,14 @@ class MoodProvider extends ChangeNotifier {
   }
 
   Future<void> saveMood(String mood) async {
+    _selectedMood = mood;
+    notifyListeners();
     final user = _auth.currentUser;
     if (user != null) {
       await _firestore.collection('users').doc(user.uid).collection('moods').add({
         'mood': mood,
         'timestamp': FieldValue.serverTimestamp(),
       });
-      _selectedMood = mood;
       fetchUserStats(); // refresh stats
     }
   }

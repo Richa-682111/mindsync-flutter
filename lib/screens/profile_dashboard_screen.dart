@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../utils/app_theme.dart';
 import '../providers/mood_provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/gemini_service.dart';
 
 class ProfileDashboardScreen extends StatefulWidget {
   const ProfileDashboardScreen({super.key});
@@ -73,9 +74,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.mainGradient,
-        ),
+        color: AppTheme.mainBackgroundColor,
         child: SafeArea(
           child: Consumer<MoodProvider>(
             builder: (context, moodProvider, child) {
@@ -126,6 +125,121 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  String _dominantMood(MoodProvider provider) {
+    final entries = <String, int>{
+      'Happy': provider.happyCount,
+      'Stressed': provider.stressedCount,
+      'Anxiety': provider.anxietyCount,
+    };
+    final sorted = entries.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top = sorted.first;
+    return top.value > 0 ? top.key : (provider.selectedMood ?? 'Anxiety');
+  }
+
+  List<String> _fallbackTips(String mood) {
+    switch (mood) {
+      case 'Happy':
+        return const [
+          'Capture one win from today in your journal.',
+          'Share your good mood with one supportive person.',
+          'Take a 10-minute mindful walk outdoors.',
+          'Listen to one song that keeps your energy balanced.',
+          'Set one small goal for tomorrow before sleep.',
+        ];
+      case 'Stressed':
+        return const [
+          'Do one 4-7-8 breathing cycle for two minutes.',
+          'Break your next task into a 10-minute first step.',
+          'Stretch your shoulders and neck for three minutes.',
+          'Drink water, then take a short no-phone walk.',
+          'Write down one thing you can control right now.',
+        ];
+      default:
+        return const [
+          'Name five things you can see and hear around you.',
+          'Place your hand on your chest and breathe slowly.',
+          'Write one fear, then one realistic counter-thought.',
+          'Reduce stimulation: dim lights and silence notifications.',
+          'Repeat a calming phrase for one focused minute.',
+        ];
+    }
+  }
+
+  Future<void> _showMoodBoosterTips(MoodProvider provider) async {
+    final mood = _dominantMood(provider);
+    List<String>? tips;
+    try {
+      tips = await GeminiService.generateMoodBoosterTips(mood: mood);
+    } catch (_) {
+      tips = null;
+    }
+
+    if (!mounted) return;
+    final resolvedTips = tips ?? _fallbackTips(mood);
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) {
+        return Container(
+          margin: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+          decoration: BoxDecoration(
+            color: AppTheme.canvas,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppTheme.border),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$mood Mood Boosters',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...resolvedTips.map(
+                (tip) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 6),
+                        child: Icon(
+                          Icons.circle,
+                          size: 7,
+                          color: AppTheme.accent,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          tip,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppTheme.textSecondary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -315,7 +429,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                   ],
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () => _showMoodBoosterTips(provider),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.accent,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

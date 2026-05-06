@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/app_theme.dart';
 import '../providers/mood_provider.dart';
+import '../services/gemini_service.dart';
 
 class JournalCardWidget extends StatefulWidget {
   final String prompt;
@@ -20,11 +21,37 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
   final TextEditingController _controller = TextEditingController();
   bool _isExpanded = false;
   bool _isSaved = false;
+  bool _isLoadingPrompt = false;
+  late String _activePrompt;
+
+  @override
+  void initState() {
+    super.initState();
+    _activePrompt = widget.prompt;
+    _loadMoodBasedPrompt();
+  }
+
+  Future<void> _loadMoodBasedPrompt() async {
+    final mood = context.read<MoodProvider>().selectedMood;
+    if (mood == null) return;
+
+    setState(() => _isLoadingPrompt = true);
+    try {
+      final generated = await GeminiService.generateJournalPrompt(mood: mood);
+      if (generated != null && generated.isNotEmpty && mounted) {
+        setState(() => _activePrompt = generated);
+      }
+    } catch (_) {
+      // Keep fallback prompt from widget input.
+    } finally {
+      if (mounted) setState(() => _isLoadingPrompt = false);
+    }
+  }
 
   void _saveEntry() {
     if (_controller.text.trim().isEmpty) return;
     context.read<MoodProvider>().saveJournalEntry(
-          widget.prompt,
+          _activePrompt,
           _controller.text.trim(),
         );
     setState(() {
@@ -121,13 +148,36 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
               ),
               const SizedBox(height: 12),
               Text(
-                widget.prompt,
+                _activePrompt,
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   color: AppTheme.textSecondary,
                   height: 1.5,
                 ),
               ),
+              if (_isLoadingPrompt) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.accent,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Personalizing prompt...',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               // Expanded input
               if (_isExpanded) ...[
                 const SizedBox(height: 16),
