@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "771436871512",
+    "project_id": "mindsync-15c12",
+    "storage_bucket": "mindsync-15c12.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771436871512:android:129bcd76536374244b2f2d",
+        "android_client_info": {
+          "package_name": "com.example.mindsync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH7GSjBomG_B_u_S3t7NV-PUGkXJK_52I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
