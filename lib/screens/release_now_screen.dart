@@ -28,9 +28,9 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
   late Animation<Color?> _paperColor;        // white → amber → transparent
   late Animation<double> _completionFade;
 
-  // Particles
-  final List<_Particle> _particles = [];
-  late AnimationController _particleCtrl;
+  // Flame
+  late Animation<double> _flameScale;
+  late Animation<double> _flameOpacity;
 
   @override
   void initState() {
@@ -39,7 +39,6 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
     _paperDropCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
     _dissolveCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
     _completionCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _particleCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600));
 
     // Paper drop animation
     _paperSlide = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -61,28 +60,18 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
       CurvedAnimation(parent: _completionCtrl, curve: Curves.easeOut),
     );
 
-    // Generate particles
-    final rng = Random(42);
-    for (int i = 0; i < 22; i++) {
-      _particles.add(_Particle(
-        angle: rng.nextDouble() * 2 * pi,
-        distance: 40 + rng.nextDouble() * 100,
-        size: 3 + rng.nextDouble() * 5,
-        color: _randomEmberColor(rng),
-        delay: rng.nextDouble() * 0.4,
-      ));
-    }
-  }
+    // Flame animation
+    _flameScale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.2), weight: 3),
+      TweenSequenceItem(tween: Tween(begin: 1.2, end: 1.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 3),
+    ]).animate(CurvedAnimation(parent: _dissolveCtrl, curve: Curves.easeInOut));
 
-  Color _randomEmberColor(Random rng) {
-    final colors = [
-      const Color(0xFFE8A87C),
-      const Color(0xFFD4956A),
-      const Color(0xFFC8855A),
-      const Color(0xFFDDB892),
-      AppTheme.warmTone,
-    ];
-    return colors[rng.nextInt(colors.length)];
+    _flameOpacity = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 4),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 2),
+    ]).animate(CurvedAnimation(parent: _dissolveCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -91,7 +80,6 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
     _paperDropCtrl.dispose();
     _dissolveCtrl.dispose();
     _completionCtrl.dispose();
-    _particleCtrl.dispose();
     super.dispose();
   }
 
@@ -112,7 +100,6 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
     // Phase 3: paper dissolves
     setState(() => _phase = _ReleasePhase.dissolving);
     _dissolveCtrl.forward();
-    _particleCtrl.forward();
     await Future.delayed(const Duration(milliseconds: 2000));
 
     // Phase 4: completion
@@ -123,11 +110,11 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _phase == _ReleasePhase.done ? AppTheme.positiveSoft : AppTheme.canvas,
+      backgroundColor: _phase == _ReleasePhase.done ? AppTheme.positiveSoft : AppTheme.warmSoft,
       appBar: _phase == _ReleasePhase.write || _phase == _ReleasePhase.paper
           ? AppBar(
               title: const Text('Release Now'),
-              backgroundColor: AppTheme.canvas,
+              backgroundColor: AppTheme.warmSoft,
               elevation: 0,
               scrolledUnderElevation: 0,
             )
@@ -283,7 +270,7 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
   // ── Phase 4: Dissolve ───────────────────────────────────────────────────────
   Widget _buildDissolvingStage() {
     return AnimatedBuilder(
-      animation: Listenable.merge([_dissolveCtrl, _particleCtrl]),
+      animation: _dissolveCtrl,
       key: const ValueKey('dissolving'),
       builder: (_, __) {
         final center = Offset(
@@ -315,28 +302,29 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
                 ),
               ),
             ),
-            // Particles
-            ..._particles.map((p) {
-              final t = (_particleCtrl.value - p.delay).clamp(0.0, 1.0);
-              if (t <= 0) return const SizedBox.shrink();
-              final dx = cos(p.angle) * p.distance * t;
-              final dy = sin(p.angle) * p.distance * t - (30 * t * t); // arc upward
-              return Positioned(
-                left: center.dx + dx - p.size / 2,
-                top: center.dy + dy - p.size / 2,
+            // Big Flame
+            Positioned(
+              bottom: 110, left: 0, right: 0,
+              child: Center(
                 child: Opacity(
-                  opacity: (1.0 - t).clamp(0.0, 1.0),
-                  child: Container(
-                    width: p.size,
-                    height: p.size,
-                    decoration: BoxDecoration(
-                      color: p.color,
-                      shape: BoxShape.circle,
+                  opacity: _flameOpacity.value,
+                  child: Transform.scale(
+                    scale: _flameScale.value,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(Icons.local_fire_department, color: Colors.orange.withOpacity(0.4), size: 140),
+                        Icon(Icons.local_fire_department, color: Colors.deepOrange, size: 100),
+                        const Positioned(
+                          bottom: 10,
+                          child: Icon(Icons.local_fire_department, color: Colors.yellow, size: 60),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              );
-            }),
+              ),
+            ),
           ],
         );
       },
@@ -392,7 +380,6 @@ class _ReleaseNowScreenState extends State<ReleaseNowScreen>
                     _paperDropCtrl.reset();
                     _dissolveCtrl.reset();
                     _completionCtrl.reset();
-                    _particleCtrl.reset();
                   });
                 },
                 child: Text('Write more', style: GoogleFonts.inter(color: AppTheme.textMuted)),
@@ -513,22 +500,7 @@ class _JarPainter extends CustomPainter {
 // ── Phase enum ──────────────────────────────────────────────────────────────────
 enum _ReleasePhase { write, paper, dropping, dissolving, done }
 
-// ── Particle data ──────────────────────────────────────────────────────────────
-class _Particle {
-  final double angle;
-  final double distance;
-  final double size;
-  final Color color;
-  final double delay;
 
-  _Particle({
-    required this.angle,
-    required this.distance,
-    required this.size,
-    required this.color,
-    required this.delay,
-  });
-}
 
 // ── Helper ──────────────────────────────────────────────────────────────────────
 double? lerpDouble(double a, double b, double t) => a + (b - a) * t;

@@ -5,20 +5,12 @@ class AppTheme {
   // ─── DESIGN SYSTEM: Serenity Theme ───
   // Soft, calming gradients, glassmorphic white surfaces, elegant typography.
   
-  // Background Gradient (Peach -> Soft Purple -> Pale Warm)
-  static const LinearGradient mainGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFFFDFD1), // Soft Peach
-      Color(0xFFE8D3EC), // Soft Lavender/Purple
-      Color(0xFFF9EAE1), // Pale Warm Sand
-    ],
-    stops: [0.1, 0.5, 0.9],
-  );
+  // Background Color (Premium warm off-white)
+  static const Color mainBackgroundColor = Color(0xFFF8F5F2);
+
 
   // Color Tokens
-  static const Color canvas       = Colors.transparent; // Let gradient show through
+  static const Color canvas       = Color(0xFFF8F5F2); // Premium warm off-white
   static const Color surface      = Color(0xB3FFFFFF);  // 70% white (Glassmorphism)
   static const Color surfaceDim   = Color(0x66FFFFFF);  // 40% white
   static const Color border       = Color(0x4DFFFFFF);  // 30% white border

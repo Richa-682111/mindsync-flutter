@@ -19,7 +19,7 @@ class MoodStressedScreen extends StatelessWidget {
         scrolledUnderElevation: 0,
       ),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppTheme.mainGradient),
+        color: AppTheme.mainBackgroundColor,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
@@ -120,7 +120,6 @@ class MoodStressedScreen extends StatelessWidget {
         ),
       ),
         ),
-      ),
     );
   }
 }

@@ -19,9 +19,7 @@ class GradientBackground extends StatelessWidget {
       extendBodyBehindAppBar: true,
       appBar: appBar,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.mainGradient,
-        ),
+        color: AppTheme.mainBackgroundColor,
         child: useSafeArea ? SafeArea(child: child) : child,
       ),
     );
