@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../services/gemini_service.dart';
 import 'meditation_library_screen.dart';
 import 'mental_health_resources_screen.dart';
+import 'goals_reminders_screen.dart';
 
 class ProfileDashboardScreen extends StatefulWidget {
   const ProfileDashboardScreen({super.key});
@@ -80,6 +81,14 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
         child: SafeArea(
           child: Consumer<MoodProvider>(
             builder: (context, moodProvider, child) {
+              final pending = moodProvider.pendingMilestone;
+              if (pending != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final title = moodProvider.consumePendingMilestone();
+                  if (title != null && mounted) _showMilestoneDialog(title);
+                });
+              }
+
               if (moodProvider.isLoadingStats) {
                 return const Center(child: CircularProgressIndicator(color: AppTheme.accent, strokeWidth: 2));
               }
@@ -150,12 +159,94 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const GoalsRemindersScreen(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.checklist_rtl_outlined, size: 16),
+                        label: const Text('Goals & Reminders'),
+                      ),
+                    ),
+                    if (moodProvider.unlockedMilestones.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Achievements',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: moodProvider.unlockedMilestones
+                            .map(
+                              (m) => Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.accentSoft,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.emoji_events_outlined, size: 14, color: AppTheme.accent),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      m,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.accent,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ],
                   ],
                 ),
               );
             },
           ),
         ),
+      ),
+    );
+  }
+
+  void _showMilestoneDialog(String title) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Row(
+          children: [
+            const Icon(Icons.emoji_events_outlined, color: AppTheme.accent),
+            const SizedBox(width: 8),
+            const Text('Milestone Unlocked'),
+          ],
+        ),
+        content: Text('You unlocked "$title". Keep going!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Continue'),
+          ),
+        ],
       ),
     );
   }
