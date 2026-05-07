@@ -6,6 +6,8 @@ import '../providers/mood_provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_theme.dart';
 import 'profile_dashboard_screen.dart';
+import 'meditation_library_screen.dart';
+import 'mental_health_resources_screen.dart';
 import 'mood_happy_screen.dart';
 import 'mood_stressed_screen.dart';
 import 'mood_anxiety_screen.dart';
@@ -38,64 +40,114 @@ class MoodSelectionScreen extends StatelessWidget {
             child: GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ProfileDashboardScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const ProfileDashboardScreen(),
+                ),
               ),
               child: Container(
-                width: 36, height: 36,
-                decoration: BoxDecoration(color: AppTheme.accentSoft, borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.person_outline, color: AppTheme.accent, size: 20),
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.accentSoft,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.person_outline,
+                  color: AppTheme.accent,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppTheme.mainGradient),
+        color: AppTheme.canvas,
         child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // ── Greeting ──
-            Text(
-              today,
-              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.textMuted, letterSpacing: 0.5),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${_greeting()}, $name',
-              style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.5),
-            ),
-            const SizedBox(height: 48),
-            Text(
-              'How are you feeling right now?',
-              style: GoogleFonts.inter(fontSize: 16, color: AppTheme.textSecondary, height: 1.4),
-            ),
-            const SizedBox(height: 48),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // ── Greeting ──
+              Text(
+                today,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.textMuted,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${_greeting()}, $name',
+                style: GoogleFonts.inter(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 48),
+              Text(
+                'How are you feeling right now?',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  color: AppTheme.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 48),
 
-            // ── Mood cards with animated emojis ──
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // ── Mood cards with animated emojis ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _AnimatedMoodIcon(
+                    moodType: MoodType.happy,
+                    label: 'Happy',
+                    onTap: () => _selectMood(context, 'Happy'),
+                  ),
+                  _AnimatedMoodIcon(
+                    moodType: MoodType.stressed,
+                    label: 'Stressed',
+                    onTap: () => _selectMood(context, 'Stressed'),
+                  ),
+                  _AnimatedMoodIcon(
+                    moodType: MoodType.anxious,
+                    label: 'Anxiety',
+                    onTap: () => _selectMood(context, 'Anxiety'),
+                  ),
+                ],
+              ),
+            const SizedBox(height: 64),
+            Wrap(
+              spacing: 10,
               children: [
-                _AnimatedMoodIcon(
-                  moodType: MoodType.happy,
-                  label: 'Happy',
-                  onTap: () => _selectMood(context, 'Happy'),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const MeditationLibraryScreen(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.self_improvement_outlined, size: 16),
+                  label: const Text('Meditation Library'),
                 ),
-                _AnimatedMoodIcon(
-                  moodType: MoodType.stressed,
-                  label: 'Stressed',
-                  onTap: () => _selectMood(context, 'Stressed'),
-                ),
-                _AnimatedMoodIcon(
-                  moodType: MoodType.anxious,
-                  label: 'Anxiety',
-                  onTap: () => _selectMood(context, 'Anxiety'),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const MentalHealthResourcesScreen(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.health_and_safety_outlined, size: 16),
+                  label: const Text('Help & Resources'),
                 ),
               ],
             ),
-            const SizedBox(height: 64),
           ],
         ),
+      ),
       ),
     );
   }
@@ -117,7 +169,8 @@ class MoodSelectionScreen extends StatelessWidget {
       context,
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => nextScreen,
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 250),
       ),
     );
@@ -171,27 +224,40 @@ class _AnimatedMoodIconState extends State<_AnimatedMoodIcon>
     super.initState();
 
     // Hover
-    _hoverCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
-    _hoverScale = Tween<double>(begin: 1.0, end: 1.22).animate(
-      CurvedAnimation(parent: _hoverCtrl, curve: Curves.easeOut),
+    _hoverCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
     );
+    _hoverScale = Tween<double>(
+      begin: 1.0,
+      end: 1.22,
+    ).animate(CurvedAnimation(parent: _hoverCtrl, curve: Curves.easeOut));
 
     // Happy bob
-    _happyBobCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600))
-      ..repeat(reverse: true);
-    _happyBob = Tween<double>(begin: 0.0, end: -6.0).animate(
-      CurvedAnimation(parent: _happyBobCtrl, curve: Curves.easeInOut),
-    );
+    _happyBobCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+    _happyBob = Tween<double>(
+      begin: 0.0,
+      end: -6.0,
+    ).animate(CurvedAnimation(parent: _happyBobCtrl, curve: Curves.easeInOut));
 
     // Stressed shake
-    _stressShakeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-    _stressShakeX = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0, end: -4), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -4, end: 4), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 4, end: -3), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -3, end: 3), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 3, end: 0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _stressShakeCtrl, curve: Curves.easeInOut));
+    _stressShakeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _stressShakeX =
+        TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 0, end: -4), weight: 1),
+          TweenSequenceItem(tween: Tween(begin: -4, end: 4), weight: 2),
+          TweenSequenceItem(tween: Tween(begin: 4, end: -3), weight: 2),
+          TweenSequenceItem(tween: Tween(begin: -3, end: 3), weight: 2),
+          TweenSequenceItem(tween: Tween(begin: 3, end: 0), weight: 1),
+        ]).animate(
+          CurvedAnimation(parent: _stressShakeCtrl, curve: Curves.easeInOut),
+        );
     _stressScale = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.12), weight: 1),
       TweenSequenceItem(tween: Tween(begin: 1.12, end: 1.0), weight: 1),
@@ -212,13 +278,21 @@ class _AnimatedMoodIconState extends State<_AnimatedMoodIcon>
     }
 
     // Anxious sweat drop
-    _anxiousCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))
-      ..repeat(reverse: false);
+    _anxiousCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: false);
     _sweatDrop = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _anxiousCtrl, curve: const Interval(0.0, 0.7, curve: Curves.easeIn)),
+      CurvedAnimation(
+        parent: _anxiousCtrl,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeIn),
+      ),
     );
     _blueTint = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _anxiousCtrl, curve: const Interval(0.0, 0.5, curve: Curves.easeInOut)),
+      CurvedAnimation(
+        parent: _anxiousCtrl,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeInOut),
+      ),
     );
   }
 
@@ -244,7 +318,10 @@ class _AnimatedMoodIconState extends State<_AnimatedMoodIcon>
       },
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
+        onTapUp: (_) {
+          setState(() => _pressed = false);
+          widget.onTap();
+        },
         onTapCancel: () => setState(() => _pressed = false),
         child: AnimatedScale(
           scale: _pressed ? 0.90 : 1.0,
@@ -255,10 +332,9 @@ class _AnimatedMoodIconState extends State<_AnimatedMoodIcon>
             children: [
               // Animated emoji container
               SizedBox(
-                width: 80, height: 80,
-                child: Center(
-                  child: _buildAnimatedEmoji(),
-                ),
+                width: 80,
+                height: 80,
+                child: Center(child: _buildAnimatedEmoji()),
               ),
               const SizedBox(height: 12),
               Text(
@@ -286,19 +362,29 @@ class _AnimatedMoodIconState extends State<_AnimatedMoodIcon>
             offset: Offset(0, _happyBob.value),
             child: Transform.scale(
               scale: _hoverScale.value,
-              child: Text(_hovered ? '😁' : '☺️', style: const TextStyle(fontSize: 64)),
+              child: Text(
+                _hovered ? '😁' : '☺️',
+                style: const TextStyle(fontSize: 64),
+              ),
             ),
           ),
         );
 
       case MoodType.stressed:
         return AnimatedBuilder(
-          animation: Listenable.merge([_stressShakeX, _stressScale, _hoverScale]),
+          animation: Listenable.merge([
+            _stressShakeX,
+            _stressScale,
+            _hoverScale,
+          ]),
           builder: (_, __) => Transform.translate(
             offset: Offset(_stressShakeX.value, 0),
             child: Transform.scale(
               scale: _stressScale.value * _hoverScale.value,
-              child: Text(_hovered ? '😤' : '😠', style: const TextStyle(fontSize: 64)),
+              child: Text(
+                _hovered ? '😤' : '😠',
+                style: const TextStyle(fontSize: 64),
+              ),
             ),
           ),
         );
@@ -323,10 +409,26 @@ class _AnimatedMoodIconState extends State<_AnimatedMoodIcon>
                   scale: _hoverScale.value,
                   child: ColorFiltered(
                     colorFilter: ColorFilter.matrix([
-                      1 - tintStrength, 0, tintStrength * 0.3, 0, 0,
-                      0, 1 - tintStrength, tintStrength * 0.2, 0, 0,
-                      tintStrength * 0.3, tintStrength * 0.1, 1, 0, 0,
-                      0, 0, 0, 1, 0,
+                      1 - tintStrength,
+                      0,
+                      tintStrength * 0.3,
+                      0,
+                      0,
+                      0,
+                      1 - tintStrength,
+                      tintStrength * 0.2,
+                      0,
+                      0,
+                      tintStrength * 0.3,
+                      tintStrength * 0.1,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
                     ]),
                     child: const Text('😰', style: TextStyle(fontSize: 64)),
                   ),
@@ -338,7 +440,8 @@ class _AnimatedMoodIconState extends State<_AnimatedMoodIcon>
                   child: Opacity(
                     opacity: dropOpacity.clamp(0.0, 1.0),
                     child: Container(
-                      width: 8, height: 12,
+                      width: 8,
+                      height: 12,
                       decoration: BoxDecoration(
                         color: const Color(0xFF7BB8D4),
                         borderRadius: const BorderRadius.only(

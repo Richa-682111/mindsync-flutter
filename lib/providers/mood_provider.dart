@@ -53,6 +53,19 @@ class MoodProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteJournalEntry(String journalId) async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('journals')
+          .doc(journalId)
+          .delete();
+      fetchUserStats();
+    }
+  }
+
   Future<void> saveActivity(String activityType) async {
     final user = _auth.currentUser;
     if (user != null) {

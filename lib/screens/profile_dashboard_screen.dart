@@ -7,6 +7,8 @@ import '../utils/app_theme.dart';
 import '../providers/mood_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/gemini_service.dart';
+import 'meditation_library_screen.dart';
+import 'mental_health_resources_screen.dart';
 
 class ProfileDashboardScreen extends StatefulWidget {
   const ProfileDashboardScreen({super.key});
@@ -118,6 +120,36 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                         Expanded(child: _StatCard(title: 'Meditation', value: '${moodProvider.meditationSessions}', unit: 'sessions', icon: Icons.self_improvement_outlined, iconColor: AppTheme.moodAnxious, bgColor: AppTheme.warmSoft)),
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MeditationLibraryScreen(),
+                              ),
+                            ),
+                            icon: const Icon(Icons.self_improvement_outlined, size: 16),
+                            label: const Text('Meditation Library'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MentalHealthResourcesScreen(),
+                              ),
+                            ),
+                            icon: const Icon(Icons.health_and_safety_outlined, size: 16),
+                            label: const Text('Help & Resources'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -171,73 +203,120 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
 
   Future<void> _showMoodBoosterTips(MoodProvider provider) async {
     final mood = _dominantMood(provider);
-    List<String>? tips;
-    try {
-      tips = await GeminiService.generateMoodBoosterTips(mood: mood);
-    } catch (_) {
-      tips = null;
+    Future<List<String>> loadTips() async {
+      try {
+        final tips = await GeminiService.generateMoodBoosterTips(mood: mood);
+        return tips ?? _fallbackTips(mood);
+      } catch (_) {
+        return _fallbackTips(mood);
+      }
     }
-
-    if (!mounted) return;
-    final resolvedTips = tips ?? _fallbackTips(mood);
 
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) {
-        return Container(
-          margin: const EdgeInsets.all(12),
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          decoration: BoxDecoration(
-            color: AppTheme.canvas,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppTheme.border),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$mood Mood Boosters',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
+        List<String> tips = [];
+        bool isLoading = true;
+        bool hasLoadedOnce = false;
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Future<void> regenerate() async {
+              setSheetState(() => isLoading = true);
+              final nextTips = await loadTips();
+              if (!context.mounted) return;
+              setSheetState(() {
+                tips = nextTips;
+                isLoading = false;
+              });
+            }
+
+            if (!hasLoadedOnce) {
+              hasLoadedOnce = true;
+              regenerate();
+            }
+
+            return Container(
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+              decoration: BoxDecoration(
+                color: AppTheme.canvas,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppTheme.border),
               ),
-              const SizedBox(height: 12),
-              ...resolvedTips.map(
-                (tip) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(top: 6),
-                        child: Icon(
-                          Icons.circle,
-                          size: 7,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$mood Mood Boosters',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: CircularProgressIndicator(
                           color: AppTheme.accent,
+                          strokeWidth: 2.2,
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          tip,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: AppTheme.textSecondary,
-                            height: 1.4,
-                          ),
+                    )
+                  else
+                    ...tips.map(
+                      (tip) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6),
+                              child: Icon(
+                                Icons.circle,
+                                size: 7,
+                                color: AppTheme.accent,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                tip,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: AppTheme.textSecondary,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Spacer(),
+                      IconButton(
+                        onPressed: isLoading ? null : regenerate,
+                        tooltip: 'Regenerate tips',
+                        icon: const Icon(
+                          Icons.refresh_rounded,
+                          color: AppTheme.accent,
                         ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
