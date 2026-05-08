@@ -6,19 +6,20 @@ import '../utils/app_theme.dart';
 
 class MoodSelectorWidget extends StatelessWidget {
   final List<Map<String, dynamic>> moods = const [
-    {'label': 'Happy',   'emoji': '😊', 'color': AppTheme.moodHappy},
-    {'label': 'Calm',    'emoji': '😌', 'color': AppTheme.accent},
-    {'label': 'Stressed','emoji': '😤', 'color': AppTheme.moodStressed},
-    {'label': 'Sad',     'emoji': '😢', 'color': AppTheme.moodAnxious},
-    {'label': 'Angry',   'emoji': '😠', 'color': Color(0xFFAF8D8D)},
+    {'label': 'Love',     'emoji': '😍', 'color': AppTheme.moodLove},
+    {'label': 'Happy',    'emoji': '😊', 'color': AppTheme.moodHappy},
+    {'label': 'Sad',      'emoji': '😢', 'color': AppTheme.moodSad},
+    {'label': 'Depress',  'emoji': '😞', 'color': AppTheme.moodStressed},
+    {'label': 'Worried',  'emoji': '😟', 'color': AppTheme.moodAnxious},
+    {'label': 'Confused', 'emoji': '😵', 'color': AppTheme.moodConfused},
   ];
 
-  MoodSelectorWidget({super.key});
+  const MoodSelectorWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 80,
+      height: 90,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: moods.length,
@@ -31,41 +32,120 @@ class MoodSelectorWidget extends StatelessWidget {
           return Consumer<MoodProvider>(
             builder: (context, moodProvider, child) {
               final isSelected = moodProvider.selectedMood == label;
-              return GestureDetector(
+              return _BounceEmoji(
+                isSelected: isSelected,
+                color: color,
+                emoji: emoji,
+                label: label,
                 onTap: () => moodProvider.selectMood(label),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut,
-                  margin: const EdgeInsets.only(right: 10),
-                  width: 76,
-                  decoration: BoxDecoration(
-                    color: isSelected ? color.withValues(alpha: 0.12) : AppTheme.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isSelected ? color.withValues(alpha: 0.6) : AppTheme.border,
-                      width: isSelected ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(emoji, style: const TextStyle(fontSize: 24)),
-                      const SizedBox(height: 4),
-                      Text(
-                        label,
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          color: isSelected ? color : AppTheme.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               );
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _BounceEmoji extends StatefulWidget {
+  final bool isSelected;
+  final Color color;
+  final String emoji;
+  final String label;
+  final VoidCallback onTap;
+
+  const _BounceEmoji({
+    required this.isSelected,
+    required this.color,
+    required this.emoji,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  State<_BounceEmoji> createState() => _BounceEmojiState();
+}
+
+class _BounceEmojiState extends State<_BounceEmoji>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _bounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _bounce = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.25), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.25, end: 0.9), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.9, end: 1.05), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.05, end: 1.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+  }
+
+  @override
+  void didUpdateWidget(covariant _BounceEmoji old) {
+    super.didUpdateWidget(old);
+    if (widget.isSelected && !old.isSelected) {
+      _ctrl.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _bounce,
+        builder: (_, child) => Transform.scale(scale: _bounce.value, child: child),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.only(right: 10),
+          width: 68,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: widget.isSelected
+                      ? widget.color.withValues(alpha: 0.15)
+                      : AppTheme.surfaceDim,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: widget.isSelected
+                        ? widget.color
+                        : AppTheme.border,
+                    width: widget.isSelected ? 2.5 : 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(widget.emoji, style: const TextStyle(fontSize: 24)),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                widget.label,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: widget.isSelected ? widget.color : AppTheme.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

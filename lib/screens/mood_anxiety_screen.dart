@@ -4,6 +4,7 @@ import '../utils/app_theme.dart';
 import '../widgets/breathing_animation_widget.dart';
 import '../widgets/journal_card_widget.dart';
 import '../widgets/meditation_timer_widget.dart';
+import '../widgets/botanical_painter.dart';
 import 'cbt_thought_reframer_screen.dart';
 
 class MoodAnxietyScreen extends StatelessWidget {
@@ -14,45 +15,50 @@ class MoodAnxietyScreen extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Find Calm'),
+        title: Text(
+          'Find Calm',
+          style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w700),
+        ),
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: Container(
-        color: AppTheme.canvas,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Breathing animation ──
+      body: Stack(
+        children: [
+          Container(color: AppTheme.canvas),
+          const Positioned.fill(child: FloatingBotanicalDots(dotCount: 6)),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Breathing animation ──
+                  const Center(child: BreathingAnimationWidget()),
+                  const SizedBox(height: 32),
 
-                // ── Meditation timer (replaces the old basic timer) ──
-                const Center(child: BreathingAnimationWidget()),
-                const SizedBox(height: 32),
-                _Label(text: 'Calm-down meditation'),
-                const SizedBox(height: 12),
-                const MeditationTimerWidget(),
-                const SizedBox(height: 32),
+                  // ── Meditation timer ──
+                  _Label(text: 'Calm-down meditation'),
+                  const SizedBox(height: 12),
+                  const MeditationTimerWidget(),
+                  const SizedBox(height: 32),
 
-                // ── Journal ──
-                _Label(text: 'Journal'),
-                const SizedBox(height: 12),
-                const JournalCardWidget(
-                  prompt:
-                      "What's worrying you right now? Writing it down helps.",
-                ),
-                const SizedBox(height: 32),
+                  // ── Journal ──
+                  _Label(text: 'Journal'),
+                  const SizedBox(height: 12),
+                  const JournalCardWidget(
+                    prompt: "What's worrying you right now? Writing it down helps.",
+                  ),
+                  const SizedBox(height: 32),
 
-                // ── CBT Reframer ──
-                _Label(text: 'Cognitive Behavioral Therapy'),
-                const SizedBox(height: 12),
-                _CBTReframerCard(),
-              ],
+                  // ── CBT Reframer ──
+                  _Label(text: 'Cognitive Behavioral Therapy'),
+                  const SizedBox(height: 12),
+                  _CBTReframerCard(),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -75,59 +81,75 @@ class _Label extends StatelessWidget {
   }
 }
 
-class _CBTReframerCard extends StatelessWidget {
+class _CBTReframerCard extends StatefulWidget {
+  @override
+  State<_CBTReframerCard> createState() => _CBTReframerCardState();
+}
+
+class _CBTReframerCardState extends State<_CBTReframerCard> {
+  bool _pressed = false;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const CBTThoughtReframerScreen(),
-          transitionsBuilder: (_, anim, __, child) =>
-              FadeTransition(opacity: anim, child: child),
-          transitionDuration: const Duration(milliseconds: 350),
-        ),
-      ),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-        decoration: BoxDecoration(
-          color: AppTheme.positiveSoft,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppTheme.positive.withValues(alpha: 0.4),
-            width: 1.5,
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const CBTThoughtReframerScreen(),
+            transitionsBuilder: (_, anim, __, child) =>
+                FadeTransition(opacity: anim, child: child),
+            transitionDuration: const Duration(milliseconds: 350),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('🌿', style: TextStyle(fontSize: 24)),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Thought Reframer',
-                  style: GoogleFonts.inter(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.positive,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                Text(
-                  'Gently challenge negative thoughts',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-              ],
+        );
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOut,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+          decoration: BoxDecoration(
+            color: AppTheme.positiveSoft,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppTheme.positive.withValues(alpha: 0.3),
+              width: 1.5,
             ),
-            const Spacer(),
-            Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.positive),
-          ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('🌿', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Thought Reframer',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.positive,
+                    ),
+                  ),
+                  Text(
+                    'Gently challenge negative thoughts',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.positive),
+            ],
+          ),
         ),
       ),
     );

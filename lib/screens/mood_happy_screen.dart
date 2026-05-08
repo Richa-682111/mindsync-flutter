@@ -4,6 +4,7 @@ import '../services/gemini_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/journal_card_widget.dart';
 import '../widgets/meditation_timer_widget.dart';
+import '../widgets/botanical_painter.dart';
 
 class MoodHappyScreen extends StatefulWidget {
   const MoodHappyScreen({super.key});
@@ -47,96 +48,101 @@ class _MoodHappyScreenState extends State<MoodHappyScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Feeling Happy'),
+        title: Text(
+          'Feeling Happy',
+          style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w700),
+        ),
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: Container(
-        color: AppTheme.canvas,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppTheme.positiveSoft,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppTheme.positive.withValues(alpha: 0.3),
+      body: Stack(
+        children: [
+          Container(color: AppTheme.canvas),
+          const Positioned.fill(child: FloatingBotanicalDots(dotCount: 6)),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppTheme.positiveSoft,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppTheme.positive.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: AppTheme.positive.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.wb_sunny_outlined,
+                            color: AppTheme.positive,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'You are doing great.',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Keep this positive momentum going.',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppTheme.textSecondary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 32),
+                  _Label(text: 'Reflect on today'),
+                  const SizedBox(height: 12),
+                  const JournalCardWidget(prompt: 'What made today special?'),
+                  const SizedBox(height: 32),
+                  _Label(text: 'Meditation'),
+                  const SizedBox(height: 12),
+                  const MeditationTimerWidget(),
+                  const SizedBox(height: 32),
+                  Row(
                     children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppTheme.positive.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
+                      _Label(text: 'Daily goals'),
+                      const SizedBox(width: 8),
+                      if (_isLoadingGoals)
+                        const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.accent,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.wb_sunny_outlined,
-                          color: AppTheme.positive,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'You are doing great.',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Keep this positive momentum going.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AppTheme.textSecondary,
-                          height: 1.4,
-                        ),
-                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 32),
-                _Label(text: 'Reflect on today'),
-                const SizedBox(height: 12),
-                const JournalCardWidget(prompt: 'What made today special?'),
-                const SizedBox(height: 32),
-                _Label(text: 'Meditation'),
-                const SizedBox(height: 12),
-                const MeditationTimerWidget(),
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    _Label(text: 'Daily goals'),
-                    const SizedBox(width: 8),
-                    if (_isLoadingGoals)
-                      const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppTheme.accent,
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ..._dailyGoals.map((goal) => _GoalTile(title: goal)),
-              ],
+                  const SizedBox(height: 12),
+                  ..._dailyGoals.map((goal) => _GoalTile(title: goal)),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -178,7 +184,7 @@ class _GoalTileState extends State<_GoalTile> {
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: _isDone ? AppTheme.positiveSoft : AppTheme.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: _isDone
               ? AppTheme.positive.withValues(alpha: 0.4)

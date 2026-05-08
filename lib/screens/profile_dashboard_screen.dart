@@ -77,7 +77,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
         ],
       ),
       body: Container(
-        color: AppTheme.mainBackgroundColor,
+        color: AppTheme.canvas,
         child: SafeArea(
           child: Consumer<MoodProvider>(
             builder: (context, moodProvider, child) {
@@ -97,7 +97,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
               final happyPercent = totalEntries > 0 ? ((moodProvider.happyCount / totalEntries) * 100).toInt() : 0;
 
               return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                 child: Column(
                   children: [
                     // ── Hero Section (Mindfulness Heart) ──
@@ -134,12 +134,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MeditationLibraryScreen(),
-                              ),
-                            ),
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MeditationLibraryScreen())),
                             icon: const Icon(Icons.self_improvement_outlined, size: 16),
                             label: const Text('Meditation Library'),
                           ),
@@ -147,12 +142,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MentalHealthResourcesScreen(),
-                              ),
-                            ),
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MentalHealthResourcesScreen())),
                             icon: const Icon(Icons.health_and_safety_outlined, size: 16),
                             label: const Text('Help & Resources'),
                           ),
@@ -163,12 +153,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const GoalsRemindersScreen(),
-                          ),
-                        ),
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GoalsRemindersScreen())),
                         icon: const Icon(Icons.checklist_rtl_outlined, size: 16),
                         label: const Text('Goals & Reminders'),
                       ),
@@ -177,44 +162,28 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                       const SizedBox(height: 18),
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Achievements',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
+                        child: Text('Achievements', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
                       ),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: moodProvider.unlockedMilestones
-                            .map(
-                              (m) => Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.accentSoft,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.emoji_events_outlined, size: 14, color: AppTheme.accent),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      m,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppTheme.accent,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
+                            .map((m) => Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.accentSoft,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.emoji_events_outlined, size: 14, color: AppTheme.accent),
+                                      const SizedBox(width: 6),
+                                      Text(m, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.accent)),
+                                    ],
+                                  ),
+                                ))
                             .toList(),
                       ),
                     ],
@@ -232,21 +201,14 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Row(
-          children: [
-            const Icon(Icons.emoji_events_outlined, color: AppTheme.accent),
-            const SizedBox(width: 8),
-            const Text('Milestone Unlocked'),
-          ],
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(children: [
+          const Icon(Icons.emoji_events_outlined, color: AppTheme.accent),
+          const SizedBox(width: 8),
+          const Text('Milestone Unlocked'),
+        ]),
         content: Text('You unlocked "$title". Keep going!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Continue'),
-          ),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Continue'))],
       ),
     );
   }
@@ -257,8 +219,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
       'Stressed': provider.stressedCount,
       'Anxiety': provider.anxietyCount,
     };
-    final sorted = entries.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = entries.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     final top = sorted.first;
     return top.value > 0 ? top.key : (provider.selectedMood ?? 'Anxiety');
   }
@@ -334,7 +295,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
               decoration: BoxDecoration(
                 color: AppTheme.canvas,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: AppTheme.border),
               ),
               child: Column(
@@ -343,21 +304,14 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                 children: [
                   Text(
                     '$mood Mood Boosters',
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                    ),
+                    style: GoogleFonts.playfairDisplay(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
                   ),
                   const SizedBox(height: 12),
                   if (isLoading)
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 12),
-                        child: CircularProgressIndicator(
-                          color: AppTheme.accent,
-                          strokeWidth: 2.2,
-                        ),
+                        child: CircularProgressIndicator(color: AppTheme.accent, strokeWidth: 2.2),
                       ),
                     )
                   else
@@ -369,41 +323,25 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                           children: [
                             const Padding(
                               padding: EdgeInsets.only(top: 6),
-                              child: Icon(
-                                Icons.circle,
-                                size: 7,
-                                color: AppTheme.accent,
-                              ),
+                              child: Icon(Icons.eco, size: 8, color: AppTheme.accent),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                tip,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  color: AppTheme.textSecondary,
-                                  height: 1.4,
-                                ),
-                              ),
+                              child: Text(tip, style: GoogleFonts.inter(fontSize: 14, color: AppTheme.textSecondary, height: 1.4)),
                             ),
                           ],
                         ),
                       ),
                     ),
                   const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Spacer(),
-                      IconButton(
-                        onPressed: isLoading ? null : regenerate,
-                        tooltip: 'Regenerate tips',
-                        icon: const Icon(
-                          Icons.refresh_rounded,
-                          color: AppTheme.accent,
-                        ),
-                      ),
-                    ],
-                  ),
+                  Row(children: [
+                    const Spacer(),
+                    IconButton(
+                      onPressed: isLoading ? null : regenerate,
+                      tooltip: 'Regenerate tips',
+                      icon: const Icon(Icons.refresh_rounded, color: AppTheme.accent),
+                    ),
+                  ]),
                 ],
               ),
             );
@@ -436,8 +374,8 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
           children: [
             const SizedBox(height: 20),
             ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [Color(0xFFE8B6D8), Color(0xFFB46E96)],
+              shaderCallback: (bounds) => LinearGradient(
+                colors: [AppTheme.warmSoft, AppTheme.warmTone],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ).createShader(bounds),
@@ -489,11 +427,9 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 20, offset: const Offset(0, 10)),
-        ],
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.border, width: 1),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -525,39 +461,37 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    PieChart(
-                      PieChartData(
-                        sectionsSpace: 6,
-                        centerSpaceRadius: 48,
-                        startDegreeOffset: -90,
-                        sections: [
-                          PieChartSectionData(
-                            color: AppTheme.moodHappy,
-                            value: provider.happyCount.toDouble() == 0 ? 0.1 : provider.happyCount.toDouble(),
-                            radius: 22,
-                            showTitle: true,
-                            title: provider.happyCount > 0 ? '${((provider.happyCount/total)*100).toInt()}%' : '',
-                            titleStyle: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                          PieChartSectionData(
-                            color: AppTheme.moodStressed,
-                            value: provider.stressedCount.toDouble() == 0 ? 0.1 : provider.stressedCount.toDouble(),
-                            radius: 18,
-                            showTitle: true,
-                            title: provider.stressedCount > 0 ? '${((provider.stressedCount/total)*100).toInt()}%' : '',
-                            titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                          PieChartSectionData(
-                            color: AppTheme.moodAnxious,
-                            value: provider.anxietyCount.toDouble() == 0 ? 0.1 : provider.anxietyCount.toDouble(),
-                            radius: 14,
-                            showTitle: true,
-                            title: provider.anxietyCount > 0 ? '${((provider.anxietyCount/total)*100).toInt()}%' : '',
-                            titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                        ]
-                      )
-                    ),
+                    PieChart(PieChartData(
+                      sectionsSpace: 6,
+                      centerSpaceRadius: 48,
+                      startDegreeOffset: -90,
+                      sections: [
+                        PieChartSectionData(
+                          color: AppTheme.moodHappy,
+                          value: provider.happyCount.toDouble() == 0 ? 0.1 : provider.happyCount.toDouble(),
+                          radius: 22,
+                          showTitle: true,
+                          title: provider.happyCount > 0 ? '${((provider.happyCount / total) * 100).toInt()}%' : '',
+                          titleStyle: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        PieChartSectionData(
+                          color: AppTheme.moodStressed,
+                          value: provider.stressedCount.toDouble() == 0 ? 0.1 : provider.stressedCount.toDouble(),
+                          radius: 18,
+                          showTitle: true,
+                          title: provider.stressedCount > 0 ? '${((provider.stressedCount / total) * 100).toInt()}%' : '',
+                          titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        PieChartSectionData(
+                          color: AppTheme.moodAnxious,
+                          value: provider.anxietyCount.toDouble() == 0 ? 0.1 : provider.anxietyCount.toDouble(),
+                          radius: 14,
+                          showTitle: true,
+                          title: provider.anxietyCount > 0 ? '${((provider.anxietyCount / total) * 100).toInt()}%' : '',
+                          titleStyle: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    )),
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -580,7 +514,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                     _legendItem(AppTheme.moodAnxious, 'Anxious'),
                   ],
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -600,16 +534,12 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                 ),
                 ElevatedButton(
                   onPressed: () => _showMoodBoosterTips(provider),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accent,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  ),
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
                   child: const Text('Learn more', style: TextStyle(fontSize: 13)),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -643,16 +573,14 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white, width: 1.5),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
+        border: Border.all(color: AppTheme.border, width: 1),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36, height: 36,
+            width: 38, height: 38,
             decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: iconColor, size: 18),
           ),

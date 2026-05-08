@@ -4,6 +4,7 @@ import '../utils/app_theme.dart';
 import '../widgets/journal_card_widget.dart';
 import '../widgets/activity_timer_sheet.dart';
 import '../widgets/meditation_timer_widget.dart';
+import '../widgets/botanical_painter.dart';
 import 'release_now_screen.dart';
 
 class MoodStressedScreen extends StatelessWidget {
@@ -14,112 +15,118 @@ class MoodStressedScreen extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Feeling Stressed'),
+        title: Text(
+          'Feeling Stressed',
+          style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w700),
+        ),
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: Container(
-        color: AppTheme.mainBackgroundColor,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Quote banner ──
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppTheme.warmSoft,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.warmTone.withValues(alpha: 0.3)),
-              ),
+      body: Stack(
+        children: [
+          Container(color: AppTheme.canvas),
+          const Positioned.fill(child: FloatingBotanicalDots(dotCount: 6)),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ── Quote banner ──
                   Container(
-                    width: 40, height: 40,
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppTheme.warmTone.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+                      color: AppTheme.warmSoft,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.warmTone.withValues(alpha: 0.25)),
                     ),
-                    child: Icon(Icons.spa_outlined, color: AppTheme.warmTone, size: 22),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    '"Tension is who you think you should be.\nRelaxation is who you are."',
-                    style: GoogleFonts.inter(
-                      fontSize: 15, fontStyle: FontStyle.italic,
-                      color: AppTheme.textPrimary, height: 1.55, letterSpacing: -0.1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 42, height: 42,
+                          decoration: BoxDecoration(
+                            color: AppTheme.warmTone.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.spa_outlined, color: AppTheme.warmTone, size: 22),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          '"Tension is who you think you should be.\nRelaxation is who you are."',
+                          style: GoogleFonts.inter(
+                            fontSize: 15, fontStyle: FontStyle.italic,
+                            color: AppTheme.textPrimary, height: 1.55, letterSpacing: -0.1,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 32),
+
+                  // ── Journal ──
+                  _Label(text: 'Reflect'),
+                  const SizedBox(height: 12),
+                  const JournalCardWidget(
+                    prompt: 'What is the main source of your stress right now?',
+                  ),
+                  const SizedBox(height: 32),
+
+                  // ── Quick relief activities ──
+                  _Label(text: 'Quick relief'),
+                  const SizedBox(height: 12),
+                  _TimedActivityCard(
+                    title: 'Go for a Walk',
+                    defaultDuration: '15 min',
+                    icon: Icons.directions_walk_outlined,
+                    accentColor: AppTheme.positive,
+                    onTap: () => ActivityTimerSheet.show(
+                      context,
+                      activityName: 'Go for a Walk',
+                      accentColor: AppTheme.positive,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _TimedActivityCard(
+                    title: 'Stretch & Move',
+                    defaultDuration: '5 min',
+                    icon: Icons.accessibility_new_outlined,
+                    accentColor: AppTheme.warmTone,
+                    onTap: () => ActivityTimerSheet.show(
+                      context,
+                      activityName: 'Stretch & Move',
+                      accentColor: AppTheme.warmTone,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _TimedActivityCard(
+                    title: 'Listen to Nature',
+                    defaultDuration: '10 min',
+                    icon: Icons.headphones_outlined,
+                    accentColor: AppTheme.moodAnxious,
+                    onTap: () => ActivityTimerSheet.show(
+                      context,
+                      activityName: 'Listen to Nature',
+                      accentColor: AppTheme.moodAnxious,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // ── Meditation timer ──
+                  _Label(text: 'Meditation'),
+                  const SizedBox(height: 12),
+                  const MeditationTimerWidget(),
+                  const SizedBox(height: 40),
+
+                  // ── Release Now ──
+                  _ReleaseNowButton(),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
-
-            // ── Journal ──
-            _Label(text: 'Reflect'),
-            const SizedBox(height: 12),
-            const JournalCardWidget(
-              prompt: 'What is the main source of your stress right now?',
-            ),
-            const SizedBox(height: 32),
-
-            // ── Quick relief activities (with timers) ──
-            _Label(text: 'Quick relief'),
-            const SizedBox(height: 12),
-            _TimedActivityCard(
-              title: 'Go for a Walk',
-              defaultDuration: '15 min',
-              icon: Icons.directions_walk_outlined,
-              accentColor: AppTheme.positive,
-              onTap: () => ActivityTimerSheet.show(
-                context,
-                activityName: 'Go for a Walk',
-                accentColor: AppTheme.positive,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _TimedActivityCard(
-              title: 'Stretch & Move',
-              defaultDuration: '5 min',
-              icon: Icons.accessibility_new_outlined,
-              accentColor: AppTheme.warmTone,
-              onTap: () => ActivityTimerSheet.show(
-                context,
-                activityName: 'Stretch & Move',
-                accentColor: AppTheme.warmTone,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _TimedActivityCard(
-              title: 'Listen to Nature',
-              defaultDuration: '10 min',
-              icon: Icons.headphones_outlined,
-              accentColor: AppTheme.moodAnxious,
-              onTap: () => ActivityTimerSheet.show(
-                context,
-                activityName: 'Listen to Nature',
-                accentColor: AppTheme.moodAnxious,
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // ── Meditation timer ──
-            _Label(text: 'Meditation'),
-            const SizedBox(height: 12),
-            const MeditationTimerWidget(),
-            const SizedBox(height: 40),
-
-            // ── Release Now ──
-            _ReleaseNowButton(),
-          ],
-        ),
-        ),
+          ),
+        ],
       ),
-        ),
     );
   }
 }
@@ -153,53 +160,58 @@ class _TimedActivityCardState extends State<_TimedActivityCard> {
       onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
       onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedContainer(
+      child: AnimatedScale(
+        scale: _pressed ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 140),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: _pressed ? widget.accentColor.withValues(alpha: 0.06) : AppTheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: _pressed ? widget.accentColor.withValues(alpha: 0.4) : AppTheme.border,
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: _pressed ? widget.accentColor.withValues(alpha: 0.06) : AppTheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _pressed ? widget.accentColor.withValues(alpha: 0.3) : AppTheme.border,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                color: widget.accentColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+          child: Row(
+            children: [
+              Container(
+                width: 42, height: 42,
+                decoration: BoxDecoration(
+                  color: widget.accentColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(widget.icon, color: widget.accentColor, size: 20),
               ),
-              child: Icon(widget.icon, color: widget.accentColor, size: 20),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-                  const SizedBox(height: 2),
-                  Text(widget.defaultDuration, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
-                ],
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                    const SizedBox(height: 2),
+                    Text(widget.defaultDuration, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted)),
+                  ],
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: widget.accentColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: widget.accentColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.timer_outlined, size: 13, color: widget.accentColor),
+                    const SizedBox(width: 4),
+                    Text('Set timer', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: widget.accentColor)),
+                  ],
+                ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.timer_outlined, size: 13, color: widget.accentColor),
-                  const SizedBox(width: 4),
-                  Text('Set timer', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: widget.accentColor)),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -246,8 +258,8 @@ class _ReleaseNowButtonState extends State<_ReleaseNowButton>
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
           decoration: BoxDecoration(
             color: AppTheme.warmSoft,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.warmTone.withValues(alpha: 0.4), width: 1.5),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.warmTone.withValues(alpha: 0.35), width: 1.5),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -259,7 +271,7 @@ class _ReleaseNowButtonState extends State<_ReleaseNowButton>
                 children: [
                   Text(
                     'Release Now',
-                    style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700, color: AppTheme.warmTone, letterSpacing: -0.2),
+                    style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.warmTone),
                   ),
                   Text(
                     'Write it down and let it burn away',

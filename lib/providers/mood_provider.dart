@@ -34,6 +34,7 @@ class MoodProvider extends ChangeNotifier {
   int meditationReminderMinute = 0;
   int goalsReminderHour = 18;
   int goalsReminderMinute = 0;
+  List<Map<String, dynamic>> customReminders = [];
 
   void selectMood(String mood) {
     if (_selectedMood != mood) {
@@ -172,6 +173,21 @@ class MoodProvider extends ChangeNotifier {
     meditationReminderMinute = (data['meditationMinute'] ?? 0) as int;
     goalsReminderHour = (data['goalsHour'] ?? 18) as int;
     goalsReminderMinute = (data['goalsMinute'] ?? 0) as int;
+    final rawCustom = data['customReminders'];
+    if (rawCustom is List) {
+      customReminders = rawCustom
+          .whereType<Map>()
+          .map((item) => {
+                'title': (item['title'] ?? '').toString(),
+                'enabled': (item['enabled'] ?? false) as bool,
+                'hour': (item['hour'] ?? 9) as int,
+                'minute': (item['minute'] ?? 0) as int,
+              })
+          .where((item) => (item['title'] as String).trim().isNotEmpty)
+          .toList();
+    } else {
+      customReminders = [];
+    }
     notifyListeners();
   }
 
@@ -193,8 +209,40 @@ class MoodProvider extends ChangeNotifier {
       'meditationMinute': meditationReminderMinute,
       'goalsHour': goalsReminderHour,
       'goalsMinute': goalsReminderMinute,
+      'customReminders': customReminders,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  void addCustomReminder(String title) {
+    final trimmed = title.trim();
+    if (trimmed.isEmpty) return;
+    customReminders.add({
+      'title': trimmed,
+      'enabled': true,
+      'hour': 9,
+      'minute': 0,
+    });
+    notifyListeners();
+  }
+
+  void removeCustomReminderAt(int index) {
+    if (index < 0 || index >= customReminders.length) return;
+    customReminders.removeAt(index);
+    notifyListeners();
+  }
+
+  void toggleCustomReminderAt(int index, bool value) {
+    if (index < 0 || index >= customReminders.length) return;
+    customReminders[index]['enabled'] = value;
+    notifyListeners();
+  }
+
+  void setCustomReminderTimeAt(int index, int hour, int minute) {
+    if (index < 0 || index >= customReminders.length) return;
+    customReminders[index]['hour'] = hour;
+    customReminders[index]['minute'] = minute;
+    notifyListeners();
   }
 
   Future<void> fetchUserStats() async {

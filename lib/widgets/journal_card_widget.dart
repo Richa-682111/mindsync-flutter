@@ -95,7 +95,7 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
           content: const Text('Journal entry saved.'),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          backgroundColor: AppTheme.textPrimary,
+          backgroundColor: AppTheme.accent,
         ),
       );
     } finally {
@@ -132,7 +132,7 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
         content: const Text('Journal entry deleted.'),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        backgroundColor: AppTheme.textPrimary,
+        backgroundColor: AppTheme.accent,
       ),
     );
   }
@@ -153,10 +153,10 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
           curve: Curves.easeOut,
           decoration: BoxDecoration(
             color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: _isExpanded
-                  ? AppTheme.accent.withValues(alpha: 0.5)
+                  ? AppTheme.accent.withValues(alpha: 0.4)
                   : AppTheme.border,
             ),
           ),
@@ -164,7 +164,7 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
             onTap: () {
               if (!_isExpanded) setState(() => _isExpanded = true);
             },
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -173,24 +173,24 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
                   Row(
                     children: [
                       Container(
-                        width: 32,
-                        height: 32,
+                        width: 34,
+                        height: 34,
                         decoration: BoxDecoration(
                           color: AppTheme.accentSoft,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           Icons.edit_note,
                           color: AppTheme.accent,
-                          size: 17,
+                          size: 18,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Text(
                         'Daily Reflection',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
                         ),
                       ),
@@ -230,52 +230,92 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
                   ],
                   if (_isExpanded) ...[
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: _controller,
-                      maxLines: 4,
-                      autofocus: true,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppTheme.textPrimary,
-                      ),
-                      decoration: const InputDecoration(
-                        hintText: 'Write your thoughts here...',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        TextButton(
-                          onPressed: _isSaving
-                              ? null
-                              : () => setState(() => _isExpanded = false),
-                          child: const Text('Cancel'),
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            maxLines: 3,
+                            autofocus: true,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppTheme.textPrimary,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Your reflection..',
+                              filled: true,
+                              fillColor: AppTheme.surfaceDim,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.all(14),
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: _isSaving ? null : _saveEntry,
-                          child: _isSaving
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text('Save'),
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          onTap: _isSaving ? null : _saveEntry,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppTheme.accent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: _isSaving
+                                ? const Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                          ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: _isSaving
+                            ? null
+                            : () => setState(() => _isExpanded = false),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
                   ] else ...[
                     const SizedBox(height: 12),
-                    Text(
-                      'Tap to add another journal entry...',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: AppTheme.accent,
-                        fontWeight: FontWeight.w500,
+                    // Quick input preview with send icon
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceDim,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Your reflection..',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: AppTheme.textMuted,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: AppTheme.accent.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.send_rounded, color: AppTheme.accent, size: 14),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -318,7 +358,7 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppTheme.surfaceDim,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
                   'No journal entries yet today.',
@@ -350,7 +390,7 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppTheme.border),
                   ),
                   child: Column(

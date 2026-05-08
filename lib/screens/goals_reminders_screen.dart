@@ -15,6 +15,7 @@ class GoalsRemindersScreen extends StatefulWidget {
 
 class _GoalsRemindersScreenState extends State<GoalsRemindersScreen> {
   final TextEditingController _goalCtrl = TextEditingController();
+  final TextEditingController _customReminderCtrl = TextEditingController();
 
   void _showActionFeedback(Object error) {
     final text = error.toString().toLowerCase();
@@ -44,6 +45,7 @@ class _GoalsRemindersScreenState extends State<GoalsRemindersScreen> {
   @override
   void dispose() {
     _goalCtrl.dispose();
+    _customReminderCtrl.dispose();
     super.dispose();
   }
 
@@ -126,6 +128,23 @@ class _GoalsRemindersScreenState extends State<GoalsRemindersScreen> {
       );
     } else {
       await NotificationService.cancel(1003);
+    }
+
+    for (var i = 0; i < 50; i++) {
+      await NotificationService.cancel(2000 + i);
+    }
+
+    for (var i = 0; i < provider.customReminders.length && i < 50; i++) {
+      final reminder = provider.customReminders[i];
+      final enabled = (reminder['enabled'] ?? false) as bool;
+      if (!enabled) continue;
+      await NotificationService.scheduleDaily(
+        id: 2000 + i,
+        title: reminder['title'].toString(),
+        body: 'MindSync custom reminder',
+        hour: (reminder['hour'] ?? 9) as int,
+        minute: (reminder['minute'] ?? 0) as int,
+      );
     }
   }
 
@@ -274,6 +293,98 @@ class _GoalsRemindersScreenState extends State<GoalsRemindersScreen> {
                   }),
                 ),
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Custom Reminders',
+                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _customReminderCtrl,
+                      decoration: const InputDecoration(hintText: 'Add custom reminder title'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      final title = _customReminderCtrl.text.trim();
+                      if (title.isEmpty) return;
+                      moodProvider.addCustomReminder(title);
+                      _customReminderCtrl.clear();
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (moodProvider.customReminders.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceDim,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'No custom reminders yet.',
+                    style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                  ),
+                )
+              else
+                Column(
+                  children: List.generate(moodProvider.customReminders.length, (index) {
+                    final reminder = moodProvider.customReminders[index];
+                    final title = reminder['title'].toString();
+                    final enabled = (reminder['enabled'] ?? false) as bool;
+                    final hour = (reminder['hour'] ?? 9) as int;
+                    final minute = (reminder['minute'] ?? 0) as int;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.border),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _timeText(hour, minute),
+                                  style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textMuted),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _pickTime(
+                              hour: hour,
+                              minute: minute,
+                              onChanged: (t) => moodProvider.setCustomReminderTimeAt(index, t.hour, t.minute),
+                            ),
+                            child: const Text('Time'),
+                          ),
+                          Switch(
+                            value: enabled,
+                            onChanged: (v) => moodProvider.toggleCustomReminderAt(index, v),
+                          ),
+                          IconButton(
+                            onPressed: () => moodProvider.removeCustomReminderAt(index),
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,

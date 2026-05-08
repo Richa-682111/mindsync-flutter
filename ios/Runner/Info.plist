@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MindSync uses your location to find nearby therapists and mental health support resources.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>MindSync uses your location to keep nearby support options up to date.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

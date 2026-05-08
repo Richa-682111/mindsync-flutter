@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/app_theme.dart';
 
-class ActivityCardWidget extends StatelessWidget {
+class ActivityCardWidget extends StatefulWidget {
   final String title;
   final String duration;
   final IconData icon;
@@ -17,29 +17,41 @@ class ActivityCardWidget extends StatelessWidget {
   });
 
   @override
+  State<ActivityCardWidget> createState() => _ActivityCardWidgetState();
+}
+
+class _ActivityCardWidgetState extends State<ActivityCardWidget> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppTheme.surface,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppTheme.border),
+            color: _pressed ? AppTheme.accentSoft : AppTheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _pressed ? AppTheme.accent.withValues(alpha: 0.3) : AppTheme.border,
+            ),
           ),
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
                   color: AppTheme.accentSoft,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: AppTheme.accent, size: 20),
+                child: Icon(widget.icon, color: AppTheme.accent, size: 20),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -47,7 +59,7 @@ class ActivityCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      widget.title,
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -56,7 +68,7 @@ class ActivityCardWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      duration,
+                      widget.duration,
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         color: AppTheme.textMuted,

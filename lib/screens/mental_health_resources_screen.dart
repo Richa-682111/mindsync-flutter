@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'therapy_locator_map_screen.dart';
 import '../utils/app_theme.dart';
 
 class MentalHealthResourcesScreen extends StatelessWidget {
@@ -76,6 +77,18 @@ class MentalHealthResourcesScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'therapy-locator-fab',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TherapyLocatorMapScreen()),
+          );
+        },
+        backgroundColor: AppTheme.accent,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.map_outlined),
       ),
     );
   }
