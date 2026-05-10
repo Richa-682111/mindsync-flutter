@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../utils/app_theme.dart';
 import '../providers/mood_provider.dart';
 import '../providers/auth_provider.dart';
-import '../services/gemini_service.dart';
+import '../services/ai_service.dart';
 import 'meditation_library_screen.dart';
 import 'mental_health_resources_screen.dart';
 import 'goals_reminders_screen.dart';
@@ -29,20 +29,26 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final horizontal = width >= 900 ? 32.0 : 20.0;
+    final contentMaxWidth = width >= 1200 ? 980.0 : 760.0;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceDim,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.arrow_back_ios_new, size: 14),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
+        leading: Navigator.canPop(context) 
+            ? IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceDim,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.arrow_back_ios_new, size: 14),
+                ),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -96,9 +102,13 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
               final totalEntries = moodProvider.happyCount + moodProvider.stressedCount + moodProvider.anxietyCount;
               final happyPercent = totalEntries > 0 ? ((moodProvider.happyCount / totalEntries) * 100).toInt() : 0;
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-                child: Column(
+              return Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(horizontal, 20, horizontal, 100),
+                    child: Column(
                   children: [
                     // ── Hero Section (Mindfulness Heart) ──
                     _buildHeroSection(happyPercent),
@@ -188,6 +198,8 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
                       ),
                     ],
                   ],
+                    ),
+                  ),
                 ),
               );
             },
@@ -257,7 +269,7 @@ class _ProfileDashboardScreenState extends State<ProfileDashboardScreen> {
     final mood = _dominantMood(provider);
     Future<List<String>> loadTips() async {
       try {
-        final tips = await GeminiService.generateMoodBoosterTips(mood: mood);
+        final tips = await AiService.generateMoodBoosterTips(mood: mood);
         return tips ?? _fallbackTips(mood);
       } catch (_) {
         return _fallbackTips(mood);

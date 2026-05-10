@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/gemini_service.dart';
+import '../services/ai_service.dart';
 import '../utils/app_theme.dart';
 
 class CBTThoughtReframerScreen extends StatefulWidget {
@@ -69,7 +69,7 @@ class _CBTThoughtReframerScreenState extends State<CBTThoughtReframerScreen>
     });
 
     try {
-      final analysis = await GeminiService.analyzeThought(thought: thought);
+      final analysis = await AiService.analyzeThought(thought: thought);
       if (!mounted) return;
 
       setState(() {

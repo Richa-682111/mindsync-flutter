@@ -1,4 +1,5 @@
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ThoughtAnalysis {
   const ThoughtAnalysis({
@@ -10,36 +11,56 @@ class ThoughtAnalysis {
   final String reframedThought;
 }
 
-class GeminiService {
-  GeminiService._();
+class AiService {
+  AiService._();
 
-  static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const String _apiKey = String.fromEnvironment('OPENROUTER_API_KEY');
   static const String _modelName = String.fromEnvironment(
-    'GEMINI_MODEL',
-    defaultValue: 'gemini-1.5-flash',
+    'OPENROUTER_MODEL',
+    defaultValue: 'google/gemini-2.5-flash',
   );
 
   static bool get isConfigured => _apiKey.isNotEmpty;
 
-  static GenerativeModel? get _model {
+  static Future<String?> _generateContent(String prompt) async {
     if (!isConfigured) return null;
-    return GenerativeModel(
-      model: _modelName,
-      apiKey: _apiKey,
-      generationConfig: GenerationConfig(
-        temperature: 0.6,
-        maxOutputTokens: 350,
-      ),
-    );
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+        headers: {
+          'Authorization': 'Bearer $_apiKey',
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://github.com/mindsync/mindsync',
+          'X-Title': 'MindSync',
+        },
+        body: jsonEncode({
+          'model': _modelName,
+          'messages': [
+            {'role': 'user', 'content': prompt}
+          ],
+          'temperature': 0.6,
+          'max_tokens': 350,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['choices'] != null && data['choices'].isNotEmpty) {
+          return data['choices'][0]['message']['content'];
+        }
+      }
+      return null;
+    } catch (e) {
+      print('OpenRouter API Error: $e');
+      return null;
+    }
   }
 
   static Future<String?> generateReframedThought({
     required String thought,
     required String distortionType,
   }) async {
-    final model = _model;
-    if (model == null) return null;
-
     final prompt = '''
 You are a warm CBT companion.
 The user entered this negative thought: "$thought"
@@ -50,18 +71,14 @@ Tone: calm, hopeful, practical.
 Avoid clinical jargon, avoid disclaimers.
 ''';
 
-    final response = await model.generateContent([Content.text(prompt)]);
-    final text = response.text?.trim();
-    if (text == null || text.isEmpty) return null;
-    return text;
+    final text = await _generateContent(prompt);
+    if (text == null || text.trim().isEmpty) return null;
+    return text.trim();
   }
 
   static Future<ThoughtAnalysis?> analyzeThought({
     required String thought,
   }) async {
-    final model = _model;
-    if (model == null) return null;
-
     final prompt = '''
 You are a warm CBT companion.
 Analyze this thought and return a supportive reframe:
@@ -74,11 +91,10 @@ REFRAME: <one positive, realistic 1-2 sentence reframe>
 No extra text.
 ''';
 
-    final response = await model.generateContent([Content.text(prompt)]);
-    final text = response.text?.trim();
-    if (text == null || text.isEmpty) return null;
+    final text = await _generateContent(prompt);
+    if (text == null || text.trim().isEmpty) return null;
 
-    final lines = text.split('\n');
+    final lines = text.trim().split('\n');
     String category = 'Negative Thought Pattern';
     String reframe = '';
 
@@ -102,9 +118,6 @@ No extra text.
   }
 
   static Future<String?> generateJournalPrompt({required String mood}) async {
-    final model = _model;
-    if (model == null) return null;
-
     final prompt = '''
 Create one reflective journaling prompt for someone feeling "$mood".
 Requirements:
@@ -115,31 +128,26 @@ Requirements:
 Return only the prompt text.
 ''';
 
-    final response = await model.generateContent([Content.text(prompt)]);
-    final text = response.text?.trim();
-    if (text == null || text.isEmpty) return null;
-    return text.replaceAll('\n', ' ');
+    final text = await _generateContent(prompt);
+    if (text == null || text.trim().isEmpty) return null;
+    return text.replaceAll('\n', ' ').trim();
   }
 
   static Future<List<String>?> generateMoodBoosterTips({
     required String mood,
   }) async {
-    final model = _model;
-    if (model == null) return null;
-
     final prompt = '''
 Generate exactly 5 actionable mood-booster tips for someone feeling "$mood".
 Each tip must be short (8-14 words) and concrete.
 Return plain text with one tip per line. No numbering, no heading.
 ''';
 
-    final response = await model.generateContent([Content.text(prompt)]);
-    final text = response.text?.trim();
-    if (text == null || text.isEmpty) return null;
+    final text = await _generateContent(prompt);
+    if (text == null || text.trim().isEmpty) return null;
 
     final lines = text
         .split('\n')
-        .map((line) => line.replaceFirst(RegExp(r'^[\-\d\.\)\s]+'), '').trim())
+        .map((line) => line.replaceFirst(RegExp(r'^[\-\d\.\)\s\*]+'), '').trim())
         .where((line) => line.isNotEmpty)
         .take(5)
         .toList();
@@ -151,9 +159,6 @@ Return plain text with one tip per line. No numbering, no heading.
   static Future<List<String>?> generateDailyGoals({
     required String mood,
   }) async {
-    final model = _model;
-    if (model == null) return null;
-
     final prompt = '''
 Generate exactly 4 practical daily goals for someone feeling "$mood".
 Rules:
@@ -162,13 +167,12 @@ Rules:
 - Return one goal per line with no numbering
 ''';
 
-    final response = await model.generateContent([Content.text(prompt)]);
-    final text = response.text?.trim();
-    if (text == null || text.isEmpty) return null;
+    final text = await _generateContent(prompt);
+    if (text == null || text.trim().isEmpty) return null;
 
     final goals = text
         .split('\n')
-        .map((line) => line.replaceFirst(RegExp(r'^[\-\d\.\)\s]+'), '').trim())
+        .map((line) => line.replaceFirst(RegExp(r'^[\-\d\.\)\s\*]+'), '').trim())
         .where((line) => line.isNotEmpty)
         .take(4)
         .toList();

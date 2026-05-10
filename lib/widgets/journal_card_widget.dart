@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/mood_provider.dart';
-import '../services/gemini_service.dart';
+import '../services/ai_service.dart';
 import '../utils/app_theme.dart';
 
 class JournalCardWidget extends StatefulWidget {
@@ -39,7 +39,7 @@ class _JournalCardWidgetState extends State<JournalCardWidget> {
 
     setState(() => _isLoadingPrompt = true);
     try {
-      final generated = await GeminiService.generateJournalPrompt(mood: mood);
+      final generated = await AiService.generateJournalPrompt(mood: mood);
       if (!mounted) return;
       if (generated != null && generated.isNotEmpty) {
         setState(() => _activePrompt = generated);

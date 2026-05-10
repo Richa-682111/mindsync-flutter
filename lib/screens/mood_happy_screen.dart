@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/gemini_service.dart';
+import '../services/ai_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/journal_card_widget.dart';
 import '../widgets/meditation_timer_widget.dart';
@@ -31,7 +31,7 @@ class _MoodHappyScreenState extends State<MoodHappyScreen> {
   Future<void> _loadAiDailyGoals() async {
     setState(() => _isLoadingGoals = true);
     try {
-      final goals = await GeminiService.generateDailyGoals(mood: 'Happy');
+      final goals = await AiService.generateDailyGoals(mood: 'Happy');
       if (!mounted) return;
       if (goals != null && goals.isNotEmpty) {
         setState(() => _dailyGoals = goals);
